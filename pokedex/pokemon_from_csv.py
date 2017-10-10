@@ -1,6 +1,6 @@
 import csv
 from elasticsearch_dsl.connections import connections
-from elasticsearch_dsl import DocType, Date, Integer, Keyword, Text, Float, Boolean
+from elasticsearch_dsl import DocType, Integer, Keyword, Text, Float, Boolean
 # Define a default Elasticsearch client
 connections.create_connection(hosts=['localhost'])
 class Pokemon(DocType):
