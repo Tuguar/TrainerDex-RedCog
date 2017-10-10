@@ -62,12 +62,11 @@ class TrainerDex:
 	
 	async def getDiff(self, trainer, days: int):
 		updates = trainer.updates()
+		updates.sort(key=lambda x: x.time_updated)
 		latest = trainer.update
-		oldest = updates[-1]
-		reference = []
-		for i in updates:
-			if i.time_updated <= (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
-				reference.append(i)
+		oldest = updates[0]
+		reference = [x for x in updates if x.time_updated <= (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=days)+datetime.timedelta(hours=3))]
+		reference.sort(key=lambda x: x.time_updated, reverse=True)
 		if reference==[]:
 			if latest==oldest:
 				diff = Difference(
@@ -83,7 +82,6 @@ class TrainerDex:
 				reference=oldest
 		else:
 			reference = reference[0]
-		print(reference)
 		diff = Difference(
 				old_date = reference.time_updated,
 				old_xp = reference.xp,
