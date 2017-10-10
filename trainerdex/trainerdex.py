@@ -122,7 +122,7 @@ class TrainerDex:
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
 		return embed
-		
+	
 	async def profileCard(self, name: str, force=False):
 		try:
 			trainer = await self.get_trainer(username=name)
@@ -185,9 +185,8 @@ class TrainerDex:
 			update = self.client.create_update(trainer.id, xp)
 			print('Update object created')
 			return trainer
-
-
-#Public Commands
+	
+	#Public Commands
 	
 	@commands.command(pass_context=True, name="trainer")
 	async def trainer(self, ctx, trainer: str): 
@@ -203,14 +202,14 @@ class TrainerDex:
 			await self.bot.edit_message(message, new_content='I found this one...', embed=embed)
 		except LookupError as e:
 			await self.bot.say('`Error: '+str(e)+'`')
-
+	
 	@commands.group(pass_context=True)
 	async def update(self, ctx):
 		"""Update information about your TrainerDex profile"""
 			
 		if ctx.invoked_subcommand is None:
 			await self.bot.send_cmd_help(ctx)
-		
+	
 	@update.command(name="xp", pass_context=True)
 	async def xp(self, ctx, xp: int): 
 		"""Update your xp
@@ -234,7 +233,7 @@ class TrainerDex:
 			trainer = self.client.get_trainer(trainer.id) #Refreshes the trainer
 			embed = await self.updateCard(trainer)
 			await self.bot.edit_message(message, new_content='Success 👍', embed=embed)
-		
+	
 	@update.command(name="name", pass_context=True)
 	async def name(self, ctx, first_name: str, last_name: str=None): 
 		"""Update your name on your profile
@@ -261,7 +260,7 @@ class TrainerDex:
 				await self.bot.edit_message(message, new_content='`Error: '+str(e)+'`')
 		else:
 			await self.bot.edit_message(message, new_content="Not found!")
-
+	
 	@update.command(name="goal", pass_context=True)
 	async def goal(self, ctx, which: str, goal: int):
 		"""Update your goals
@@ -306,9 +305,9 @@ class TrainerDex:
 		for i in range(min(entries, 25, len(trainers))):
 			embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
 		await self.bot.edit_message(message, new_content=str(datetime.date.today()), embed=embed)
-
-#Mod-commands
-
+	
+	#Mod-commands
+	
 	@commands.command(pass_context=True)
 	@checks.mod_or_permissions(assign_roles=True)
 	async def spoofer(self, ctx):
@@ -317,7 +316,7 @@ class TrainerDex:
 		WIP
 		"""
 		await self.bot.say("This command is currently a work in progress.")
-
+	
 	@commands.command(name="addprofile", no_pm=True, pass_context=True, alias="newprofile")
 	@checks.mod_or_permissions(assign_roles=True)
 	async def addprofile(self, ctx, mention, name: str, team: str, level: int, xp: int, opt: str=''): 
@@ -346,7 +345,7 @@ class TrainerDex:
 			await self.bot.edit_message(message, new_content='Success 👍', embed=embed)
 		except LookupError as e:
 			await self.bot.edit_message(message, '`Error: '+str(e)+'`')
-		
+	
 	@commands.command(pass_context=True, no_pm=True)
 	@checks.mod_or_permissions(assign_roles=True)
 	async def addsecondary(self, ctx, mention, name: str, team: str, level: int, xp: int, opt: str=''):
@@ -375,7 +374,7 @@ class TrainerDex:
 			await self.bot.edit_message(message, new_content='Success 👍', embed=embed)
 		except LookupError as e:
 			await self.bot.edit_message(message, '`Error: '+str(e)+'`')
-		
+	
 	@commands.command(pass_context=True, no_pm=True)
 	@checks.mod_or_permissions(assign_roles=True)
 	async def approve(self, ctx, mention, name: str, team: str, level: int, xp: int, opt: str=''): 
@@ -484,12 +483,12 @@ class TrainerDex:
 		svr = ctx.message.server
 		server = self.client.import_discord_server(svr.name, str(svr.region), svr.id, owner=svr.owner.id, bans_cheaters=c1, seg_cheaters=c2, bans_minors=m1, seg_minors=m2)
 		await self.bot.edit_message(message, 'Server #{s.id} {s.name} succesfully added.'.format(server))
-	
+
 def check_folders():
 	if not os.path.exists("data/trainerdex"):
 		print("Creating data/trainerdex folder...")
 		os.makedirs("data/trainerdex")
-		
+
 def check_file():
 	f = 'data/trainerdex/settings.json'
 	data = {}
@@ -497,7 +496,7 @@ def check_file():
 	if not dataIO.is_valid_json(f):
 		print("Creating default token.json...")
 		dataIO.save_json(f, data)
-	
+
 def setup(bot):
 	check_folders()
 	check_file()
