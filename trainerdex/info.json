@@ -6,7 +6,7 @@
     "REQUIREMENTS" : [
         "requests",
         "maya",
-        "trainerdex",
+        "trainerdex==1.2.1",
         "datetime",
         "asyncio",
         "time",

@@ -47,13 +47,13 @@ class TrainerDex:
 			except LookupError:
 				raise
 		elif discord and prefered==True:
-			return trainerdex.DiscordUser(discord).owner.trainer(all_=False)
+			return self.client.get_discord_user(discord).owner.trainer(all_=False)
 		elif discord and prefered==False:
-			return trainerdex.DiscordUser(discord).owner.trainer(all_=True)
+			return self.client.get_discord_user(discord).owner.trainer(all_=True)
 		elif account and prefered==True:
-			return trainerdex.User(account).trainer(all_=False)
+			return self.client.get_user(account).trainer(all_=False)
 		elif account and prefered==False:
-			return trainerdex.User(account).trainer(all_=True)
+			return self.client.get_user(account).trainer(all_=True)
 		
 	async def getTeamByName(self, team: str):
 		for item in self.teams:
@@ -168,7 +168,7 @@ class TrainerDex:
 			avatarUrl = mention.avatar_url
 		try:
 			print('Checking if existing Discord User {} exists in our database...'.format(mention.id))
-			discordUser=trainerdex.DiscordUser(mention.id)
+			discordUser=self.client.get_discord_user(mention.id)
 		except requests.exceptions.HTTPError as e:
 			print(e)
 			user = self.client.create_user(username='_'+username, first_name=name)
@@ -295,7 +295,7 @@ class TrainerDex:
 		
 		message = await self.bot.say("Thinking...")
 		await self.bot.send_typing(ctx.message.channel)
-		trainer_list = trainerdex.DiscordServer(ctx.message.server.id).get_trainers(ctx.message.server)
+		trainer_list = self.client.get_discord_server(ctx.message.server.id).get_trainers(ctx.message.server)
 		trainers = []
 		for trainer in trainer_list:
 			if trainer.statistics==True:
