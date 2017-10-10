@@ -231,6 +231,7 @@ class TrainerDex:
 					self.client.update_trainer(trainer, total_goal=0)
 			update = self.client.create_update(trainer.id, xp)
 			await asyncio.sleep(1)
+			trainer = self.client.get_trainer(trainer.id) #Refreshes the trainer
 			embed = await self.updateCard(trainer)
 			await self.bot.edit_message(message, new_content='Success 👍', embed=embed)
 		
