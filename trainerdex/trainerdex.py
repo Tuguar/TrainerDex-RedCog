@@ -1,18 +1,19 @@
 ﻿# coding=utf-8
 import os
 import asyncio
-import time
 import datetime
-import maya
+import humanize
 import pytz
 import discord
 import random
 import requests
+import pycent
+import trainerdex
 from collections import namedtuple
 from discord.ext import commands
 from .utils import checks
 from .utils.dataIO import dataIO
-import trainerdex
+
 
 settings_file = 'data/trainerdex/settings.json'
 json_data = dataIO.load_json(settings_file)
@@ -100,9 +101,12 @@ class TrainerDex:
 		embed=discord.Embed(timestamp=dailyDiff.new_date, colour=int(trainer.team.colour.replace("#", ""), 16))
 		embed.set_author(name=trainer.username, icon_url=trainer.account.discord().avatar_url)
 		embed.add_field(name='Level', value=level.level)
-		embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
+		if level.level != 40:
+			embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
+		else:
+			embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
 		if dailyDiff.change_xp and dailyDiff.change_time:
-			gain = '{:,} since {}'.format(dailyDiff.change_xp, maya.MayaDT.from_datetime(dailyDiff.new_date).slang_time())
+			gain = '{:,} since {}'.format(dailyDiff.change_xp, humanize.naturalday(dailyDiff.new_date))
 			if dailyDiff.change_time.days!=1:
 				gain += 's. '
 			if dailyDiff.change_time.days>1:
@@ -110,17 +114,16 @@ class TrainerDex:
 			embed.add_field(name='Gain', value=gain)
 			if (trainer.goal_daily!=None) and (dailyDiff.change_time.days>0):
 				dailyGoal = trainer.goal_daily
-				dailyCent = lambda x, y, z: round(((x/y)/z)*100,2)
-				embed.add_field(name='Daily completion', value='{}% / {:,}'.format(dailyCent(dailyDiff.change_xp, dailyDiff.change_time.days, dailyGoal), dailyGoal))
+				embed.add_field(name='Daily completion', value='{}% towards {:,}'.format(pycent.percentage(dailyDiff.change_xp/dailyDiff.change_time.days, dailyGoal), dailyGoal))
 		if (trainer.goal_total!=None):
 			totalGoal = trainer.goal_total
 			totalDiff = await self.getDiff(trainer, 7)
-			embed.add_field(name='Goal remaining', value='{:,} / {:,}'.format(totalGoal-totalDiff.new_xp, totalGoal))
+			embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
 			if totalDiff.change_time.days>0:
 				eta = lambda x, y, z: round(x/(y/z))
 				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.days)
 				eta = totalDiff.new_date+datetime.timedelta(days=eta)
-				embed.add_field(name='ETA', value=maya.MayaDT.from_datetime(eta).slang_time())
+				embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
 		return embed
@@ -136,15 +139,19 @@ class TrainerDex:
 		if trainer.statistics is False and force is False:
 			await self.bot.say("{} has chosen to opt out of statistics and the trainer profile system.".format(t_pogo))
 		else:
-			embed=discord.Embed(title=trainer.username, timestamp=trainer.update.time_updated, colour=int(trainer.team.colour.replace("#", ""), 16))
+			embed=discord.Embed(timestamp=trainer.update.time_updated, colour=int(trainer.team.colour.replace("#", ""), 16))
+			embed.set_author(name=trainer.username, icon_url=discordUser.avatar_url)
 			if account and (account.first_name or account.last_name):
 				embed.add_field(name='Name', value=account.first_name+' '+account.last_name)
-			if discordUser:
-				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
 			embed.add_field(name='Team', value=trainer.team.name)
 			embed.add_field(name='Level', value=level.level)
-			embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
+			if level.level != 40:
+				embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
+			else:
+				embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
 			#embed.set_thumbnail(url=trainer.team.image)
+			if discordUser:
+				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
 			if trainer.cheater is True:
 				embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/341635533497434112/344984256633634818/C_SesKvyabCcQCNjEc1FJFe1EGpEuascVpHe_0e_DulewqS5nYtePystL4un5wgVFhIw300.png')
 				embed.add_field(name='Comments', value='{} is a known spoofer'.format(trainer.username))
