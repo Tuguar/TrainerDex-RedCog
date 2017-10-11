@@ -329,14 +329,11 @@ class TrainerDex:
 	
 	#Mod-commands
 	
-	@commands.command(pass_context=True)
+	@commands.command(pass_context=True, enabled=False)
 	@checks.mod_or_permissions(assign_roles=True)
 	async def spoofer(self, ctx):
-		"""Set a user as a spoofer
-		
-		WIP
-		"""
-		await self.bot.say("This command is currently a work in progress.")
+		"""Set a user as a spoofer"""
+		pass
 	
 	@commands.command(name="addprofile", no_pm=True, pass_context=True, alias="newprofile")
 	@checks.mod_or_permissions(assign_roles=True)
