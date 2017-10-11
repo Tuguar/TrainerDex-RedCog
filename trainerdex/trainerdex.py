@@ -203,6 +203,19 @@ class TrainerDex:
 		except LookupError as e:
 			await self.bot.say('`Error: '+str(e)+'`')
 	
+	@commands.command(pass_context=True)
+	async def progress(self, ctx):
+		"""Find out information about your own progress"""
+		
+		trainer = await self.get_trainer(discord=ctx.message.author.id)
+		
+		message = await self.bot.say('Thinking...')
+		await self.bot.send_typing(ctx.message.channel)
+		
+		embed = await self.updateCard(trainer)
+		await self.bot.edit_message(message, new_content='Here we go...', embed=embed)
+		
+	
 	@commands.group(pass_context=True)
 	async def update(self, ctx):
 		"""Update information about your TrainerDex profile"""
