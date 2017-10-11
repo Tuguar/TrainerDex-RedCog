@@ -306,14 +306,8 @@ class TrainerDex:
 			await self.bot.edit_message(message, "{}, please choose 'Daily' or 'Total' for after goal.".format(ctx.message.author.mention))
 	
 	@commands.command(pass_context=True)
-	async def leaderboard(self, ctx, entries=9):
-		"""View the leaderboard for your server
-		
-		Optional argument: entries - default, 9
-		
-		Example: leaderboard 25
-		Example: leaderboard
-		"""
+	async def leaderboard(self, ctx, mentions):
+		"""View the leaderboard for your server"""
 		
 		message = await self.bot.say("Thinking...")
 		await self.bot.send_typing(ctx.message.channel)
@@ -324,8 +318,13 @@ class TrainerDex:
 				trainers.append(trainer)
 		trainers.sort(key=lambda x:x.update.xp, reverse=True)
 		embed=discord.Embed(title="Leaderboard")
-		for i in range(min(entries, 25, len(trainers))):
-			embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
+		if len(ctx.message.mentions) >= 1:
+			for _, mbr in zip(range(25), ctx.message.mentions):
+				i = trainers.index(await self.get_trainer(discord=mbr.id))
+				embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
+		else:
+			for i in range(min(25, len(trainers))):
+				embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
 		await self.bot.edit_message(message, new_content=str(datetime.date.today()), embed=embed)
 	
 	#Mod-commands
