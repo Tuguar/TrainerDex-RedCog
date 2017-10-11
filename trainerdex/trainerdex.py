@@ -98,7 +98,7 @@ class TrainerDex:
 		level=trainer.level
 		embed=discord.Embed(title=trainer.username, timestamp=dailyDiff.new_date, colour=int(trainer.team.colour.replace("#", ""), 16))
 		embed.add_field(name='Level', value=level.level)
-		embed.add_field(name='XP', value='{:,}'.format(dailyDiff.new_xp-level.xp_required))
+		embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
 		if dailyDiff.change_xp and dailyDiff.change_time:
 			gain = '{:,} over {} day'.format(dailyDiff.change_xp, dailyDiff.change_time.days)
 			if dailyDiff.change_time.days!=1:
@@ -141,7 +141,7 @@ class TrainerDex:
 				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
 			embed.add_field(name='Team', value=trainer.team.name)
 			embed.add_field(name='Level', value=level.level)
-			embed.add_field(name='XP', value='{:,}'.format(trainer.update.xp-level.total_xp))
+			embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
 			#embed.set_thumbnail(url=trainer.team.image)
 			if trainer.cheater is True:
 				embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/341635533497434112/344984256633634818/C_SesKvyabCcQCNjEc1FJFe1EGpEuascVpHe_0e_DulewqS5nYtePystL4un5wgVFhIw300.png')
