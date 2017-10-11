@@ -3,6 +3,7 @@ import os
 import asyncio
 import time
 import datetime
+import maya
 import pytz
 import discord
 import random
@@ -96,11 +97,12 @@ class TrainerDex:
 	async def updateCard(self, trainer):
 		dailyDiff = await self.getDiff(trainer, 1)
 		level=trainer.level
-		embed=discord.Embed(title=trainer.username, timestamp=dailyDiff.new_date, colour=int(trainer.team.colour.replace("#", ""), 16))
+		embed=discord.Embed(timestamp=dailyDiff.new_date, colour=int(trainer.team.colour.replace("#", ""), 16))
+		embed.set_author(name=trainer.username, icon_url=trainer.account.discord().avatar_url)
 		embed.add_field(name='Level', value=level.level)
 		embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
 		if dailyDiff.change_xp and dailyDiff.change_time:
-			gain = '{:,} over {} day'.format(dailyDiff.change_xp, dailyDiff.change_time.days)
+			gain = '{:,} since {}'.format(dailyDiff.change_xp, maya.MayaDT.from_datetime(dailyDiff.new_date).slang_time())
 			if dailyDiff.change_time.days!=1:
 				gain += 's. '
 			if dailyDiff.change_time.days>1:
@@ -109,16 +111,16 @@ class TrainerDex:
 			if (trainer.goal_daily!=None) and (dailyDiff.change_time.days>0):
 				dailyGoal = trainer.goal_daily
 				dailyCent = lambda x, y, z: round(((x/y)/z)*100,2)
-				embed.add_field(name='Daily completion', value='{}% of {:,}'.format(dailyCent(dailyDiff.change_xp, dailyDiff.change_time.days, dailyGoal), dailyGoal))
+				embed.add_field(name='Daily completion', value='{}% / {:,}'.format(dailyCent(dailyDiff.change_xp, dailyDiff.change_time.days, dailyGoal), dailyGoal))
 		if (trainer.goal_total!=None):
 			totalGoal = trainer.goal_total
 			totalDiff = await self.getDiff(trainer, 7)
-			embed.add_field(name='Goal remaining', value='{:,} of {:,}'.format(totalGoal-totalDiff.new_xp, totalGoal))
+			embed.add_field(name='Goal remaining', value='{:,} / {:,}'.format(totalGoal-totalDiff.new_xp, totalGoal))
 			if totalDiff.change_time.days>0:
 				eta = lambda x, y, z: round(x/(y/z))
 				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.days)
-				eta = datetime.date.today()+datetime.timedelta(days=eta)
-				embed.add_field(name='ETA', value=eta.strftime("%A %d %B %Y"))
+				eta = totalDiff.new_date+datetime.timedelta(days=eta)
+				embed.add_field(name='ETA', value=maya.MayaDT.from_datetime(eta).slang_time())
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
 		return embed
