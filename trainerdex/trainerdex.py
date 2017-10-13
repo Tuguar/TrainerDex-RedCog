@@ -65,7 +65,7 @@ class TrainerDex:
 		updates.sort(key=lambda x: x.time_updated)
 		latest = trainer.update
 		oldest = updates[0]
-		reference = [x for x in updates if x.time_updated <= (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=days)+datetime.timedelta(hours=3))]
+		reference = [x for x in updates if x.time_updated <= (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=days)+datetime.timedelta(hours=6))]
 		reference.sort(key=lambda x: x.time_updated, reverse=True)
 		if reference==[]:
 			if latest==oldest:
