@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search, DocType, Date, Integer, Keyword, Text, Float, Boolean
+from elasticsearch_dsl import Search, DocType, Integer, Keyword, Text, Float, Boolean
 from elasticsearch_dsl.connections import connections
 import datetime
 
@@ -63,4 +63,3 @@ class Pokedex:
 
 def setup(bot):
     bot.add_cog(Pokedex(bot))
-

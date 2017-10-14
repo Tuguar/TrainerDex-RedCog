@@ -1,17 +1,19 @@
 ﻿# coding=utf-8
 import os
 import asyncio
-import time
 import datetime
+import humanize
 import pytz
 import discord
 import random
 import requests
+import pycent
+import trainerdex
 from collections import namedtuple
 from discord.ext import commands
 from .utils import checks
 from .utils.dataIO import dataIO
-import trainerdex
+
 
 settings_file = 'data/trainerdex/settings.json'
 json_data = dataIO.load_json(settings_file)
@@ -78,7 +80,7 @@ class TrainerDex:
 					change_xp = None
 				)
 				return diff
-			elif oldest.time_updated > (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
+			elif oldest.time_updated > (latest.time_updated-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
 				reference=oldest
 		else:
 			reference = reference[0]
@@ -96,11 +98,15 @@ class TrainerDex:
 	async def updateCard(self, trainer):
 		dailyDiff = await self.getDiff(trainer, 1)
 		level=trainer.level
-		embed=discord.Embed(title=trainer.username, timestamp=dailyDiff.new_date, colour=int(trainer.team.colour.replace("#", ""), 16))
+		embed=discord.Embed(timestamp=dailyDiff.new_date, colour=int(trainer.team.colour.replace("#", ""), 16))
+		embed.set_author(name=trainer.username, icon_url=trainer.account.discord().avatar_url)
 		embed.add_field(name='Level', value=level.level)
-		embed.add_field(name='XP', value='{:,}'.format(dailyDiff.new_xp-level.xp_required))
+		if level.level != 40:
+			embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
+		else:
+			embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
 		if dailyDiff.change_xp and dailyDiff.change_time:
-			gain = '{:,} over {} day'.format(dailyDiff.change_xp, dailyDiff.change_time.days)
+			gain = '{:,} since {}'.format(dailyDiff.change_xp, humanize.naturalday(dailyDiff.new_date))
 			if dailyDiff.change_time.days!=1:
 				gain += 's. '
 			if dailyDiff.change_time.days>1:
@@ -108,21 +114,20 @@ class TrainerDex:
 			embed.add_field(name='Gain', value=gain)
 			if (trainer.goal_daily!=None) and (dailyDiff.change_time.days>0):
 				dailyGoal = trainer.goal_daily
-				dailyCent = lambda x, y, z: round(((x/y)/z)*100,2)
-				embed.add_field(name='Daily completion', value='{}% of {:,}'.format(dailyCent(dailyDiff.change_xp, dailyDiff.change_time.days, dailyGoal), dailyGoal))
+				embed.add_field(name='Daily completion', value='{}% towards {:,}'.format(pycent.percentage(dailyDiff.change_xp/dailyDiff.change_time.days, dailyGoal), dailyGoal))
 		if (trainer.goal_total!=None):
 			totalGoal = trainer.goal_total
 			totalDiff = await self.getDiff(trainer, 7)
-			embed.add_field(name='Goal remaining', value='{:,} of {:,}'.format(totalGoal-totalDiff.new_xp, totalGoal))
+			embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
 			if totalDiff.change_time.days>0:
 				eta = lambda x, y, z: round(x/(y/z))
 				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.days)
-				eta = datetime.date.today()+datetime.timedelta(days=eta)
-				embed.add_field(name='ETA', value=eta.strftime("%A %d %B %Y"))
+				eta = totalDiff.new_date+datetime.timedelta(days=eta)
+				embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
 		return embed
-		
+	
 	async def profileCard(self, name: str, force=False):
 		try:
 			trainer = await self.get_trainer(username=name)
@@ -134,15 +139,19 @@ class TrainerDex:
 		if trainer.statistics is False and force is False:
 			await self.bot.say("{} has chosen to opt out of statistics and the trainer profile system.".format(t_pogo))
 		else:
-			embed=discord.Embed(title=trainer.username, timestamp=trainer.update.time_updated, colour=int(trainer.team.colour.replace("#", ""), 16))
+			embed=discord.Embed(timestamp=trainer.update.time_updated, colour=int(trainer.team.colour.replace("#", ""), 16))
+			embed.set_author(name=trainer.username, icon_url=discordUser.avatar_url)
 			if account and (account.first_name or account.last_name):
 				embed.add_field(name='Name', value=account.first_name+' '+account.last_name)
-			if discordUser:
-				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
 			embed.add_field(name='Team', value=trainer.team.name)
 			embed.add_field(name='Level', value=level.level)
-			embed.add_field(name='XP', value='{:,}'.format(trainer.update.xp-level.total_xp))
+			if level.level != 40:
+				embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
+			else:
+				embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
 			#embed.set_thumbnail(url=trainer.team.image)
+			if discordUser:
+				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
 			if trainer.cheater is True:
 				embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/341635533497434112/344984256633634818/C_SesKvyabCcQCNjEc1FJFe1EGpEuascVpHe_0e_DulewqS5nYtePystL4un5wgVFhIw300.png')
 				embed.add_field(name='Comments', value='{} is a known spoofer'.format(trainer.username))
@@ -185,9 +194,8 @@ class TrainerDex:
 			update = self.client.create_update(trainer.id, xp)
 			print('Update object created')
 			return trainer
-
-
-#Public Commands
+	
+	#Public Commands
 	
 	@commands.command(pass_context=True, name="trainer")
 	async def trainer(self, ctx, trainer: str): 
@@ -203,14 +211,27 @@ class TrainerDex:
 			await self.bot.edit_message(message, new_content='I found this one...', embed=embed)
 		except LookupError as e:
 			await self.bot.say('`Error: '+str(e)+'`')
-
+	
+	@commands.command(pass_context=True)
+	async def progress(self, ctx):
+		"""Find out information about your own progress"""
+		
+		trainer = await self.get_trainer(discord=ctx.message.author.id)
+		
+		message = await self.bot.say('Thinking...')
+		await self.bot.send_typing(ctx.message.channel)
+		
+		embed = await self.updateCard(trainer)
+		await self.bot.edit_message(message, new_content='Here we go...', embed=embed)
+		
+	
 	@commands.group(pass_context=True)
 	async def update(self, ctx):
 		"""Update information about your TrainerDex profile"""
 			
 		if ctx.invoked_subcommand is None:
 			await self.bot.send_cmd_help(ctx)
-		
+	
 	@update.command(name="xp", pass_context=True)
 	async def xp(self, ctx, xp: int): 
 		"""Update your xp
@@ -234,7 +255,7 @@ class TrainerDex:
 			trainer = self.client.get_trainer(trainer.id) #Refreshes the trainer
 			embed = await self.updateCard(trainer)
 			await self.bot.edit_message(message, new_content='Success 👍', embed=embed)
-		
+	
 	@update.command(name="name", pass_context=True)
 	async def name(self, ctx, first_name: str, last_name: str=None): 
 		"""Update your name on your profile
@@ -261,7 +282,7 @@ class TrainerDex:
 				await self.bot.edit_message(message, new_content='`Error: '+str(e)+'`')
 		else:
 			await self.bot.edit_message(message, new_content="Not found!")
-
+	
 	@update.command(name="goal", pass_context=True)
 	async def goal(self, ctx, which: str, goal: int):
 		"""Update your goals
@@ -284,15 +305,10 @@ class TrainerDex:
 		else:
 			await self.bot.edit_message(message, "{}, please choose 'Daily' or 'Total' for after goal.".format(ctx.message.author.mention))
 	
-	@commands.command(pass_context=True)
-	async def leaderboard(self, ctx, entries=9):
-		"""View the leaderboard for your server
-		
-		Optional argument: entries - default, 9
-		
-		Example: leaderboard 25
-		Example: leaderboard
-		"""
+	@commands.command(pass_context=True, no_pm=True)
+	@checks.mod_or_permissions(assign_roles=True)
+	async def leaderboard(self, ctx, mentions):
+		"""View the leaderboard for your server"""
 		
 		message = await self.bot.say("Thinking...")
 		await self.bot.send_typing(ctx.message.channel)
@@ -303,21 +319,23 @@ class TrainerDex:
 				trainers.append(trainer)
 		trainers.sort(key=lambda x:x.update.xp, reverse=True)
 		embed=discord.Embed(title="Leaderboard")
-		for i in range(min(entries, 25, len(trainers))):
-			embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
+		if len(ctx.message.mentions) >= 1:
+			for _, mbr in zip(range(25), ctx.message.mentions):
+				i = trainers.index(await self.get_trainer(discord=mbr.id))
+				embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
+		else:
+			for i in range(min(25, len(trainers))):
+				embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
 		await self.bot.edit_message(message, new_content=str(datetime.date.today()), embed=embed)
-
-#Mod-commands
-
-	@commands.command(pass_context=True)
+	
+	#Mod-commands
+	
+	@commands.command(pass_context=True, enabled=False, no_pm=True)
 	@checks.mod_or_permissions(assign_roles=True)
 	async def spoofer(self, ctx):
-		"""Set a user as a spoofer
-		
-		WIP
-		"""
-		await self.bot.say("This command is currently a work in progress.")
-
+		"""Set a user as a spoofer"""
+		pass
+	
 	@commands.command(name="addprofile", no_pm=True, pass_context=True, alias="newprofile")
 	@checks.mod_or_permissions(assign_roles=True)
 	async def addprofile(self, ctx, mention, name: str, team: str, level: int, xp: int, opt: str=''): 
@@ -346,7 +364,7 @@ class TrainerDex:
 			await self.bot.edit_message(message, new_content='Success 👍', embed=embed)
 		except LookupError as e:
 			await self.bot.edit_message(message, '`Error: '+str(e)+'`')
-		
+	
 	@commands.command(pass_context=True, no_pm=True)
 	@checks.mod_or_permissions(assign_roles=True)
 	async def addsecondary(self, ctx, mention, name: str, team: str, level: int, xp: int, opt: str=''):
@@ -375,7 +393,7 @@ class TrainerDex:
 			await self.bot.edit_message(message, new_content='Success 👍', embed=embed)
 		except LookupError as e:
 			await self.bot.edit_message(message, '`Error: '+str(e)+'`')
-		
+	
 	@commands.command(pass_context=True, no_pm=True)
 	@checks.mod_or_permissions(assign_roles=True)
 	async def approve(self, ctx, mention, name: str, team: str, level: int, xp: int, opt: str=''): 
@@ -450,7 +468,7 @@ class TrainerDex:
 			dataIO.save_json(settings_file, settings)
 			await self.bot.edit_message(message, '```API token set - please restart cog```')
 	
-	@tdset.command(pass_context=True)
+	@tdset.command(pass_context=True, no_pm=True)
 	@checks.is_owner()
 	async def register_server(self, ctx, cheaters, minors):
 		"""Register Server to database, required before leaderboards can work
@@ -484,12 +502,12 @@ class TrainerDex:
 		svr = ctx.message.server
 		server = self.client.import_discord_server(svr.name, str(svr.region), svr.id, owner=svr.owner.id, bans_cheaters=c1, seg_cheaters=c2, bans_minors=m1, seg_minors=m2)
 		await self.bot.edit_message(message, 'Server #{s.id} {s.name} succesfully added.'.format(server))
-	
+
 def check_folders():
 	if not os.path.exists("data/trainerdex"):
 		print("Creating data/trainerdex folder...")
 		os.makedirs("data/trainerdex")
-		
+
 def check_file():
 	f = 'data/trainerdex/settings.json'
 	data = {}
@@ -497,7 +515,7 @@ def check_file():
 	if not dataIO.is_valid_json(f):
 		print("Creating default token.json...")
 		dataIO.save_json(f, data)
-	
+
 def setup(bot):
 	check_folders()
 	check_file()

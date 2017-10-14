@@ -1,7 +1,6 @@
 import random
 from discord.ext import commands
 
-
 class EasterEggs:
 	"""Easter Eggs"""
 	
@@ -20,6 +19,6 @@ class EasterEggs:
 		]
 		await self.bot.send_typing(ctx.message.channel)
 		await self.bot.say(random.choice(excuses).format(ctx.message.author.display_name))
-		
+
 def setup(bot):
-    bot.add_cog(EasterEggs(bot))
+	bot.add_cog(EasterEggs(bot))

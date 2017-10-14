@@ -1,0 +1,5 @@
+trainerdex==1.2.3
+requests
+maya
+pycent==1.0
+humanize
