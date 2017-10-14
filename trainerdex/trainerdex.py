@@ -115,13 +115,15 @@ class TrainerDex:
 				embed.add_field(name='Daily completion', value='{}% towards {:,}'.format(pycent.percentage(dailyDiff.change_xp/dailyDiff.change_time.days, dailyGoal), dailyGoal))
 		if (trainer.goal_total!=None):
 			totalGoal = trainer.goal_total
-			totalDiff = await self.getDiff(trainer, 7)
-			embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
-			if totalDiff.change_time.days>0:
-				eta = lambda x, y, z: round(x/(y/z))
-				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.days)
-				eta = totalDiff.new_date+datetime.timedelta(days=eta)
-				embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
+		elif level.level < 40 or trainer.goal_total==0:
+			totalGoal = trainerdex.Level.from_level(level.level+1).total_xp
+		totalDiff = await self.getDiff(trainer, 7)
+		embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
+		if totalDiff.change_time.days>0:
+			eta = lambda x, y, z: round(x/(y/z))
+			eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.days)
+			eta = totalDiff.new_date+datetime.timedelta(days=eta)
+			embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
 		return embed
