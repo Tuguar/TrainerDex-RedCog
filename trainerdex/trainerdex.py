@@ -1,17 +1,19 @@
 ﻿# coding=utf-8
 import os
 import asyncio
-import time
 import datetime
+import humanize
 import pytz
 import discord
 import random
 import requests
+import pycent
+import trainerdex
 from collections import namedtuple
 from discord.ext import commands
 from .utils import checks
 from .utils.dataIO import dataIO
-import trainerdex
+
 
 settings_file = 'data/trainerdex/settings.json'
 json_data = dataIO.load_json(settings_file)
@@ -65,7 +67,7 @@ class TrainerDex:
 		updates.sort(key=lambda x: x.time_updated)
 		latest = trainer.update
 		oldest = updates[0]
-		reference = [x for x in updates if x.time_updated <= (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=days)+datetime.timedelta(hours=3))]
+		reference = [x for x in updates if x.time_updated <= (latest.time_updated-datetime.timedelta(days=days)+datetime.timedelta(hours=3))]
 		reference.sort(key=lambda x: x.time_updated, reverse=True)
 		if reference==[]:
 			if latest==oldest:
@@ -78,7 +80,7 @@ class TrainerDex:
 					change_xp = None
 				)
 				return diff
-			elif oldest.time_updated > (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
+			elif oldest.time_updated > (latest.time_updated-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
 				reference=oldest
 		else:
 			reference = reference[0]
@@ -96,11 +98,15 @@ class TrainerDex:
 	async def updateCard(self, trainer):
 		dailyDiff = await self.getDiff(trainer, 1)
 		level=trainer.level
-		embed=discord.Embed(title=trainer.username, timestamp=dailyDiff.new_date, colour=int(trainer.team.colour.replace("#", ""), 16))
+		embed=discord.Embed(timestamp=dailyDiff.new_date, colour=int(trainer.team.colour.replace("#", ""), 16))
+		embed.set_author(name=trainer.username, icon_url=trainer.account.discord().avatar_url)
 		embed.add_field(name='Level', value=level.level)
-		embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
+		if level.level != 40:
+			embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
+		else:
+			embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
 		if dailyDiff.change_xp and dailyDiff.change_time:
-			gain = '{:,} over {} day'.format(dailyDiff.change_xp, dailyDiff.change_time.days)
+			gain = '{:,} since {}'.format(dailyDiff.change_xp, humanize.naturalday(dailyDiff.new_date))
 			if dailyDiff.change_time.days!=1:
 				gain += 's. '
 			if dailyDiff.change_time.days>1:
@@ -108,17 +114,16 @@ class TrainerDex:
 			embed.add_field(name='Gain', value=gain)
 			if (trainer.goal_daily!=None) and (dailyDiff.change_time.days>0):
 				dailyGoal = trainer.goal_daily
-				dailyCent = lambda x, y, z: round(((x/y)/z)*100,2)
-				embed.add_field(name='Daily completion', value='{}% of {:,}'.format(dailyCent(dailyDiff.change_xp, dailyDiff.change_time.days, dailyGoal), dailyGoal))
+				embed.add_field(name='Daily completion', value='{}% towards {:,}'.format(pycent.percentage(dailyDiff.change_xp/dailyDiff.change_time.days, dailyGoal), dailyGoal))
 		if (trainer.goal_total!=None):
 			totalGoal = trainer.goal_total
 			totalDiff = await self.getDiff(trainer, 7)
-			embed.add_field(name='Goal remaining', value='{:,} of {:,}'.format(totalGoal-totalDiff.new_xp, totalGoal))
+			embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
 			if totalDiff.change_time.days>0:
 				eta = lambda x, y, z: round(x/(y/z))
 				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.days)
-				eta = datetime.date.today()+datetime.timedelta(days=eta)
-				embed.add_field(name='ETA', value=eta.strftime("%A %d %B %Y"))
+				eta = totalDiff.new_date+datetime.timedelta(days=eta)
+				embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
 		return embed
@@ -134,15 +139,19 @@ class TrainerDex:
 		if trainer.statistics is False and force is False:
 			await self.bot.say("{} has chosen to opt out of statistics and the trainer profile system.".format(t_pogo))
 		else:
-			embed=discord.Embed(title=trainer.username, timestamp=trainer.update.time_updated, colour=int(trainer.team.colour.replace("#", ""), 16))
+			embed=discord.Embed(timestamp=trainer.update.time_updated, colour=int(trainer.team.colour.replace("#", ""), 16))
+			embed.set_author(name=trainer.username, icon_url=discordUser.avatar_url)
 			if account and (account.first_name or account.last_name):
 				embed.add_field(name='Name', value=account.first_name+' '+account.last_name)
-			if discordUser:
-				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
 			embed.add_field(name='Team', value=trainer.team.name)
 			embed.add_field(name='Level', value=level.level)
-			embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
+			if level.level != 40:
+				embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
+			else:
+				embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
 			#embed.set_thumbnail(url=trainer.team.image)
+			if discordUser:
+				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
 			if trainer.cheater is True:
 				embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/341635533497434112/344984256633634818/C_SesKvyabCcQCNjEc1FJFe1EGpEuascVpHe_0e_DulewqS5nYtePystL4un5wgVFhIw300.png')
 				embed.add_field(name='Comments', value='{} is a known spoofer'.format(trainer.username))
@@ -202,6 +211,19 @@ class TrainerDex:
 			await self.bot.edit_message(message, new_content='I found this one...', embed=embed)
 		except LookupError as e:
 			await self.bot.say('`Error: '+str(e)+'`')
+	
+	@commands.command(pass_context=True)
+	async def progress(self, ctx):
+		"""Find out information about your own progress"""
+		
+		trainer = await self.get_trainer(discord=ctx.message.author.id)
+		
+		message = await self.bot.say('Thinking...')
+		await self.bot.send_typing(ctx.message.channel)
+		
+		embed = await self.updateCard(trainer)
+		await self.bot.edit_message(message, new_content='Here we go...', embed=embed)
+		
 	
 	@commands.group(pass_context=True)
 	async def update(self, ctx):
@@ -283,15 +305,10 @@ class TrainerDex:
 		else:
 			await self.bot.edit_message(message, "{}, please choose 'Daily' or 'Total' for after goal.".format(ctx.message.author.mention))
 	
-	@commands.command(pass_context=True)
-	async def leaderboard(self, ctx, entries=9):
-		"""View the leaderboard for your server
-		
-		Optional argument: entries - default, 9
-		
-		Example: leaderboard 25
-		Example: leaderboard
-		"""
+	@commands.command(pass_context=True, no_pm=True)
+	@checks.mod_or_permissions(assign_roles=True)
+	async def leaderboard(self, ctx, mentions):
+		"""View the leaderboard for your server"""
 		
 		message = await self.bot.say("Thinking...")
 		await self.bot.send_typing(ctx.message.channel)
@@ -302,8 +319,13 @@ class TrainerDex:
 				trainers.append(trainer)
 		trainers.sort(key=lambda x:x.update.xp, reverse=True)
 		embed=discord.Embed(title="Leaderboard")
-		for i in range(min(entries, 25, len(trainers))):
-			embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
+		if len(ctx.message.mentions) >= 1:
+			for _, mbr in zip(range(25), ctx.message.mentions):
+				i = trainers.index(await self.get_trainer(discord=mbr.id))
+				embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
+		else:
+			for i in range(min(25, len(trainers))):
+				embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
 		await self.bot.edit_message(message, new_content=str(datetime.date.today()), embed=embed)
 	
 	#Mod-commands

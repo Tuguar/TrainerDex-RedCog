@@ -6,10 +6,10 @@
     "REQUIREMENTS" : [
         "requests",
         "maya",
+        "humanize",
         "trainerdex",
         "datetime",
         "asyncio",
-        "time",
         "random",
         "pycent"
     ],
