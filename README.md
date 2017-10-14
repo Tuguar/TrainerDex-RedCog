@@ -6,8 +6,11 @@ A simple profile system for keeping track of Pokemon Go XP and Team. Doesn't log
 
 ## Installation
 
-`[p]cog repo add trainerdex https://github.com/TrainerDex/TrainerDex-RedCog.git`
-`[p]cog install trainerdex`
+1. `[p]cog repo add trainerdex https://github.com/TrainerDex/TrainerDex-RedCog.git`
+2. Agree to the disclaimer.
+3. `[p]cog install trainerdex`
+4. `[p]tdset api <apikey>` - You'll need to request one.
+5. `[p]tdset register_server <cheaters:<allowed/ban/segregate>> <minors:<allowed/ban/segregate>>`
 
 ## Requirements
 * [trainerdex](https://pypi.python.org/pypi/trainerdex)
