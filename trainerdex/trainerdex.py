@@ -308,7 +308,7 @@ class TrainerDex:
 	
 	#Mod-commands
 	
-	@commands.command(pass_context=True, enabled=False)
+	@commands.command(pass_context=True, enabled=False, no_pm=True)
 	@checks.mod_or_permissions(assign_roles=True)
 	async def spoofer(self, ctx):
 		"""Set a user as a spoofer"""
@@ -446,7 +446,7 @@ class TrainerDex:
 			dataIO.save_json(settings_file, settings)
 			await self.bot.edit_message(message, '```API token set - please restart cog```')
 	
-	@tdset.command(pass_context=True)
+	@tdset.command(pass_context=True, no_pm=True)
 	@checks.is_owner()
 	async def register_server(self, ctx, cheaters, minors):
 		"""Register Server to database, required before leaderboards can work
