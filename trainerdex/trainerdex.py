@@ -106,9 +106,7 @@ class TrainerDex:
 		else:
 			embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
 		if dailyDiff.change_xp and dailyDiff.change_time:
-			gain = '{:,} since {}'.format(dailyDiff.change_xp, humanize.naturalday(dailyDiff.new_date))
-			if dailyDiff.change_time.days!=1:
-				gain += 's. '
+			gain = '{:,} since {}'.format(dailyDiff.change_xp, humanize.naturalday(dailyDiff.old_date))
 			if dailyDiff.change_time.days>1:
 				gain += "That's {:,} xp/day.".format(round(dailyDiff.change_xp/dailyDiff.change_time.days))
 			embed.add_field(name='Gain', value=gain)
