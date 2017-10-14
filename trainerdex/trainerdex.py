@@ -305,7 +305,8 @@ class TrainerDex:
 		else:
 			await self.bot.edit_message(message, "{}, please choose 'Daily' or 'Total' for after goal.".format(ctx.message.author.mention))
 	
-	@commands.command(pass_context=True)
+	@commands.command(pass_context=True, no_pm=True)
+	@checks.mod_or_permissions(assign_roles=True)
 	async def leaderboard(self, ctx, mentions):
 		"""View the leaderboard for your server"""
 		
