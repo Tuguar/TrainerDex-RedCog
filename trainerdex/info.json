@@ -11,7 +11,9 @@
         "datetime",
         "asyncio",
         "random",
-        "pycent"
+        "pycent",
+        "pygal",
+        "cairosvg",
     ],
     "SHORT" : "A trainer profile system for Pokemon Go servers",
     "TAGS" : [

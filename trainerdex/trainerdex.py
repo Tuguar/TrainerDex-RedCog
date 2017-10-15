@@ -9,6 +9,7 @@ import random
 import requests
 import pycent
 import trainerdex
+import pygal
 from collections import namedtuple
 from discord.ext import commands
 from .utils import checks
@@ -36,7 +37,22 @@ class TrainerDex:
 		self.bot = bot
 		self.client = trainerdex.Client(token)
 		self.teams = self.client.get_teams()
-		
+	
+	async def xp_graph(self, trainer):
+		xp_line = []
+		xp_time = []
+		updates = [x for x in trainer.updates() if x.time_updated >= (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=31)+datetime.timedelta(hours=6))]
+		updates.sort(key=lambda x: x.time_updated, reverse=False)
+		for update in updates:
+			xp_line.append(update.xp)
+			xp_time.append(update.time_updated)
+		chart = pygal.Line(fill=True)
+		chart.x_labels = map(lambda d: humanize.naturaldate(d), xp_time)
+		chart.add('XP', xp_line)
+		image_loc = 'data/trainerdex/'+trainer.username+'.png'
+		chart.render_to_png(image_loc)
+		return image_loc
+	
 	async def get_trainer(self, username=None, discord=None, account=None, prefered=True):
 		"""Returns a Trainer object for a given discord, trainer username or account id
 		
@@ -223,6 +239,7 @@ class TrainerDex:
 		
 		embed = await self.updateCard(trainer)
 		await self.bot.edit_message(message, new_content='Here we go...', embed=embed)
+		await self.bot.send_file(ctx.message.channel, await self.xp_graph(trainer))
 		
 	
 	@commands.group(pass_context=True)

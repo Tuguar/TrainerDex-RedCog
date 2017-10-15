@@ -3,3 +3,5 @@ requests
 maya
 pycent==1.0
 humanize
+pygal=-2.4.0
+cairosvg==2.1.1
