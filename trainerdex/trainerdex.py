@@ -89,7 +89,7 @@ class TrainerDex:
 				old_xp = reference.xp,
 				new_date = latest.time_updated,
 				new_xp = latest.xp,
-				change_time = latest.time_updated-reference.time_updated+datetime.timedelta(hours=3),
+				change_time = latest.time_updated-reference.time_updated,
 				change_xp = latest.xp-reference.xp
 			)
 		
