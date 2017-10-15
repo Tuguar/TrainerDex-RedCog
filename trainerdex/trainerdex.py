@@ -10,6 +10,7 @@ import requests
 import pycent
 import trainerdex
 import pygal
+from pygal.style import DarkSolarizedStyle
 from collections import namedtuple
 from discord.ext import commands
 from .utils import checks
@@ -46,7 +47,7 @@ class TrainerDex:
 		for update in updates:
 			xp_line.append(update.xp)
 			xp_time.append(update.time_updated)
-		chart = pygal.Line(fill=True)
+		chart = pygal.Line(fill=True, style=DarkSolarizedStyle)
 		chart.x_labels = map(lambda d: humanize.naturaldate(d), xp_time)
 		chart.add('XP', xp_line)
 		image_loc = 'data/trainerdex/'+trainer.username+'.png'
