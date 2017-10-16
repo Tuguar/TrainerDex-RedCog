@@ -99,7 +99,10 @@ class TrainerDex:
 		dailyDiff = await self.getDiff(trainer, 1)
 		level=trainer.level
 		embed=discord.Embed(timestamp=dailyDiff.new_date, colour=int(trainer.team().colour.replace("#", ""), 16))
-		embed.set_author(name=trainer.username, icon_url=trainer.account.discord().avatar_url)
+		try:
+			embed.set_author(name=trainer.username, icon_url=trainer.account().discord().avatar_url)
+		except:
+			embed.set_author(name=trainer.username)
 		embed.add_field(name='Level', value=level.level)
 		if level.level != 40:
 			embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
@@ -131,14 +134,17 @@ class TrainerDex:
 			trainer = await self.get_trainer(username=name)
 		except LookupError:
 			raise
-		account = trainer.account
+		account = trainer.owner()
 		discordUser = account.discord()
 		level=trainer.level
 		if trainer.statistics is False and force is False:
 			await self.bot.say("{} has chosen to opt out of statistics and the trainer profile system.".format(t_pogo))
 		else:
 			embed=discord.Embed(timestamp=trainer.update.time_updated, colour=int(trainer.team().colour.replace("#", ""), 16))
-			embed.set_author(name=trainer.username, icon_url=discordUser.avatar_url)
+			try:
+				embed.set_author(name=trainer.username, icon_url=discordUser.avatar_url)
+			except:
+				embed.set_author(name=trainer.username)
 			if account and (account.first_name or account.last_name):
 				embed.add_field(name='Name', value=account.first_name+' '+account.last_name)
 			embed.add_field(name='Team', value=trainer.team().name)
@@ -268,7 +274,7 @@ class TrainerDex:
 		message = await self.bot.say('Processing...')
 		await self.bot.send_typing(ctx.message.channel)
 		trainer = await self.get_trainer(discord=ctx.message.author.id)
-		account = trainer.account
+		account = trainer.account()
 		if last_name=='..':
 			last_name=' '
 		if account:
