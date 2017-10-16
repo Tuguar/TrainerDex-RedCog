@@ -157,7 +157,6 @@ class TrainerDex:
 			if discordUser:
 				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
 			if trainer.cheater is True:
-				embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/341635533497434112/344984256633634818/C_SesKvyabCcQCNjEc1FJFe1EGpEuascVpHe_0e_DulewqS5nYtePystL4un5wgVFhIw300.png')
 				embed.add_field(name='Comments', value='{} is a known spoofer'.format(trainer.username))
 			embed.set_footer(text="Total XP: {:,}".format(trainer.update.xp))
 			return embed
