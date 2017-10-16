@@ -49,9 +49,9 @@ class TrainerDex:
 			except LookupError:
 				raise
 		elif discord and prefered==True:
-			return self.client.get_discord_user(discord).owner.trainer(all_=False)
+			return self.client.get_discord_user(discord).owner().trainer(all_=False)
 		elif discord and prefered==False:
-			return self.client.get_discord_user(discord).owner.trainer(all_=True)
+			return self.client.get_discord_user(discord).owner().trainer(all_=True)
 		elif account and prefered==True:
 			return self.client.get_user(account).trainer(all_=False)
 		elif account and prefered==False:
@@ -98,7 +98,7 @@ class TrainerDex:
 	async def updateCard(self, trainer):
 		dailyDiff = await self.getDiff(trainer, 1)
 		level=trainer.level
-		embed=discord.Embed(timestamp=dailyDiff.new_date, colour=int(trainer.team.colour.replace("#", ""), 16))
+		embed=discord.Embed(timestamp=dailyDiff.new_date, colour=int(trainer.team().colour.replace("#", ""), 16))
 		embed.set_author(name=trainer.username, icon_url=trainer.account.discord().avatar_url)
 		embed.add_field(name='Level', value=level.level)
 		if level.level != 40:
@@ -137,17 +137,17 @@ class TrainerDex:
 		if trainer.statistics is False and force is False:
 			await self.bot.say("{} has chosen to opt out of statistics and the trainer profile system.".format(t_pogo))
 		else:
-			embed=discord.Embed(timestamp=trainer.update.time_updated, colour=int(trainer.team.colour.replace("#", ""), 16))
+			embed=discord.Embed(timestamp=trainer.update.time_updated, colour=int(trainer.team().colour.replace("#", ""), 16))
 			embed.set_author(name=trainer.username, icon_url=discordUser.avatar_url)
 			if account and (account.first_name or account.last_name):
 				embed.add_field(name='Name', value=account.first_name+' '+account.last_name)
-			embed.add_field(name='Team', value=trainer.team.name)
+			embed.add_field(name='Team', value=trainer.team().name)
 			embed.add_field(name='Level', value=level.level)
 			if level.level != 40:
 				embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
 			else:
 				embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
-			#embed.set_thumbnail(url=trainer.team.image)
+			#embed.set_thumbnail(url=trainer.team().image)
 			if discordUser:
 				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
 			if trainer.cheater is True:
@@ -305,25 +305,31 @@ class TrainerDex:
 	
 	@commands.command(pass_context=True, no_pm=True)
 	@checks.mod_or_permissions(assign_roles=True)
-	async def leaderboard(self, ctx, mentions):
+	async def leaderboard(self, ctx):
 		"""View the leaderboard for your server"""
 		
 		message = await self.bot.say("Thinking...")
 		await self.bot.send_typing(ctx.message.channel)
-		trainer_list = self.client.get_discord_server(ctx.message.server.id).get_trainers(ctx.message.server)
-		trainers = []
-		for trainer in trainer_list:
-			if trainer.statistics==True:
-				trainers.append(trainer)
-		trainers.sort(key=lambda x:x.update.xp, reverse=True)
+		user_list = self.client.get_discord_server(ctx.message.server.id).get_users(ctx.message.server)
+		users = []
+		for user in user_list:
+			if user.trainer().statistics==True:
+				users.append(user)
+		users.sort(key=lambda x:x.trainer().update.xp, reverse=True)
 		embed=discord.Embed(title="Leaderboard")
 		if len(ctx.message.mentions) >= 1:
 			for _, mbr in zip(range(25), ctx.message.mentions):
-				i = trainers.index(await self.get_trainer(discord=mbr.id))
-				embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
+				try:
+					i = users.index(self.client.get_discord_user(mbr.id).owner())
+				except requests.exceptions.HTTPError as e:
+					await self.bot.say('Could not be magic with {}: `{}`'.format(mbr.mention, e))
+				else:
+					trainer = users[i].trainer()
+					embed.add_field(name='{}. {} - {}'.format(i+1, trainer.username, trainer.team().name), value="{:,}".format(trainer.update.xp))
 		else:
-			for i in range(min(25, len(trainers))):
-				embed.add_field(name='{}. {}'.format(i+1, trainers[i].username), value="{:,}".format(trainers[i].update.xp))
+			for i in range(min(25, len(users))):
+				trainer = users[i].trainer()
+				embed.add_field(name='{}. {} - {}'.format(i+1, trainer.username, trainer.team().name), value="{:,}".format(trainer.update.xp))
 		await self.bot.edit_message(message, new_content=str(datetime.date.today()), embed=embed)
 	
 	#Mod-commands
