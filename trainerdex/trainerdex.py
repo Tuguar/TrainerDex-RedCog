@@ -182,7 +182,7 @@ class TrainerDex:
 			discordUser = self.client.import_discord_user(name=mention.name, discriminator=mention.discriminator, id_=mention.id, avatar_url=avatarUrl, creation=mention.created_at, user=user.id)
 		else:
 			print('Found... Using that.')
-			user = discordUser.owner
+			user = discordUser.owner()
 		finally:
 			#create or update trainer
 			print('Creating trainer...')
