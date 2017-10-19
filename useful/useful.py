@@ -26,7 +26,7 @@ class Useful:
 	@commands.command()
 	async def migration(self):
 		migrations = rrule(WEEKLY, dtstart=datetime(2017,2,23,0,0), interval=2, byweekday=(TH,))
-		await self.bot.say("The next migration is in {}".format(humanize.naturaltime([x for x in fortnight if x >= datetime.now()][0])))
+		await self.bot.say("The next migration is in {}".format(humanize.naturaltime([x for x in migrations if x >= datetime.now()][0])))
 
 def setup(bot):
 	bot.add_cog(Useful(bot))
