@@ -1,0 +1,12 @@
+{
+    "AUTHOR" : "JayTurnr",
+    "DESCRIPTION" : "Useful stuff for Pokemon Go servers",
+    "NAME" : "Willow's Useful shit",
+    "REQUIREMENTS" : [
+        "humanize",
+    ],
+    "TAGS" : [
+        "fun",
+        "useful",
+    ]
+}
