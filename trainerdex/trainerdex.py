@@ -113,10 +113,10 @@ class TrainerDex:
 			if dailyDiff.change_time.days>1:
 				gain += "That's {:,} xp/day.".format(round(dailyDiff.change_xp/dailyDiff.change_time.days))
 			embed.add_field(name='Gain', value=gain)
-			if (trainer.goal_daily!=None) and (dailyDiff.change_time.days>0):
+			if trainer.goal_daily and dailyDiff.change_time.days!=0:
 				dailyGoal = trainer.goal_daily
 				embed.add_field(name='Daily completion', value='{}% towards {:,}'.format(pycent.percentage(dailyDiff.change_xp/dailyDiff.change_time.days, dailyGoal), dailyGoal))
-		if (trainer.goal_total!=None):
+		if trainer.goal_total and trainer.goal_total!=0:
 			totalGoal = trainer.goal_total
 			totalDiff = await self.getDiff(trainer, 7)
 			embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
@@ -300,7 +300,7 @@ class TrainerDex:
 			self.client.update_trainer(trainer, daily_goal=goal)
 			await self.bot.edit_message(message, "{}, your daily goal has been set to {:,}".format(ctx.message.author.mention, goal))
 		elif which.title()=='Total':
-			if goal>trainer.update.xp:
+			if goal>trainer.update.xp or goal==0:
 				self.client.update_trainer(trainer, total_goal=goal)
 				await self.bot.edit_message(message, "{}, your total goal has been set to {:,}".format(ctx.message.author.mention, goal))
 			else:
