@@ -3,7 +3,11 @@
     "DESCRIPTION" : "Just some fun",
     "NAME" : "EasterEggs",
     "SHORT" : "Just some fun",
+    "REQUIREMENTS" : [
+        "humanize",
+    ],
     "TAGS" : [
-        "fun"
+        "fun",
+        "useful",
     ]
 }
