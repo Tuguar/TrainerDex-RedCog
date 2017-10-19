@@ -4,8 +4,8 @@ from datetime import datetime
 from datetime.util import rrule, WEEKLY, TH
 from discord.ext import commands
 
-class EasterEggs:
-	"""Easter Eggs"""
+class Useful:
+	"""Easter Eggs and Useful tools for a pokemon server"""
 	
 	def __init__(self, bot):
 		self.bot = bot
@@ -29,4 +29,4 @@ class EasterEggs:
 		await self.bot.say("The next migration is in {}".format(humanize.naturaltime([x for x in fortnight if x >= datetime.now()][0])))
 
 def setup(bot):
-	bot.add_cog(EasterEggs(bot))
+	bot.add_cog(Useful(bot))
