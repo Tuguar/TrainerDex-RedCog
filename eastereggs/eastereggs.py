@@ -14,7 +14,7 @@ class EasterEggs:
 	async def excuse(self, ctx):
 		excuses = [
 			'{} is finding socks.', 
-			'{} is only '+str(random.randint(1,120))+' minutes away.', 
+			'{} is only '+str(random.randint(61,300))+' minutes away.', 
 			'{}’s cat got stuck in the toilet.', 
 			'Pizzzaaaaaaa 🍕🍍', 
 			'{} just put a casserole in the oven.', 
