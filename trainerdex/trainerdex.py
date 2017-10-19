@@ -342,7 +342,7 @@ class TrainerDex:
 		Optional arguments:
 		spoofer - sets the user as a spoofer
 		
-		Example: approve @JayTurnr#1234 JayTurnr Valor 34 1234567
+		Example: addprofile @JayTurnr#1234 JayTurnr Valor 34 1234567
 		"""
 		
 		message = await self.bot.say('Processing...')
@@ -371,7 +371,7 @@ class TrainerDex:
 		Optional arguments:
 		spoofer - sets the user as a spoofer
 		
-		Example: approve @JayTurnr#1234 JayTurnr Valor 34 1234567 spoofer
+		Example: addsecondary @JayTurnr#1234 JayTurnr Valor 34 1234567 spoofer
 		"""
 		
 		message = await self.bot.say('Processing...')
