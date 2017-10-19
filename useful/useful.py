@@ -1,7 +1,7 @@
 import random
 import humanize
 from datetime import datetime
-from datetime.util import rrule, WEEKLY, TH
+from dateutil.rrule import rrule, WEEKLY, TH
 from discord.ext import commands
 
 class Useful:

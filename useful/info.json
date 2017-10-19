@@ -4,6 +4,7 @@
     "NAME" : "Willow's Useful shit",
     "REQUIREMENTS" : [
         "humanize",
+        "dateutil",
     ],
     "TAGS" : [
         "fun",
