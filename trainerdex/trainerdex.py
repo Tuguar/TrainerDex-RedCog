@@ -120,13 +120,14 @@ class TrainerDex:
 			totalGoal = trainer.goal_total
 		elif level.level < 40:
 			totalGoal = trainerdex.Level.from_level(level.level+1).total_xp
-		totalDiff = await self.getDiff(trainer, 7)
-		embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
-		if totalDiff.change_time.days>0:
-			eta = lambda x, y, z: round(x/(y/z))
-			eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.days)
-			eta = totalDiff.new_date+datetime.timedelta(days=eta)
-			embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
+		if totalGoal:
+			totalDiff = await self.getDiff(trainer, 7)
+			embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
+			if totalDiff.change_time.days>0:
+				eta = lambda x, y, z: round(x/(y/z))
+				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.days)
+				eta = totalDiff.new_date+datetime.timedelta(days=eta)
+				embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
 		return embed
