@@ -107,7 +107,7 @@ class TrainerDex:
 		if level.level != 40:
 			embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
 		else:
-			embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
+			embed.add_field(name='Total XP', value='{}'.format(humanize.intword(level.total_xp)))
 		if dailyDiff.change_xp and dailyDiff.change_time:
 			gain = '{:,} since {}. '.format(dailyDiff.change_xp, humanize.naturalday(dailyDiff.old_date))
 			if dailyDiff.change_time.days>1:
@@ -155,7 +155,7 @@ class TrainerDex:
 			if level.level != 40:
 				embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
 			else:
-				embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
+				embed.add_field(name='Total XP', value='{}'.format(humanize.intword(level.total_xp)))
 			#embed.set_thumbnail(url=trainer.team().image)
 			if discordUser:
 				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
