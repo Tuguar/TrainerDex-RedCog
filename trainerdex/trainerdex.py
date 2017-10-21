@@ -120,6 +120,8 @@ class TrainerDex:
 			totalGoal = trainer.goal_total
 		elif level.level < 40:
 			totalGoal = trainerdex.Level.from_level(level.level+1).total_xp
+		else:
+			totalGoal = None
 		if totalGoal:
 			totalDiff = await self.getDiff(trainer, 7)
 			embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
