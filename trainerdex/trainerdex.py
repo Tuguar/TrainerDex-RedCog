@@ -14,6 +14,7 @@ from collections import namedtuple
 from discord.ext import commands
 from .utils import checks
 from .utils.dataIO import dataIO
+from pendulum.parsing.exceptions import ParserError
 
 
 settings_file = 'data/trainerdex/settings.json'
@@ -314,18 +315,22 @@ class TrainerDex:
 		message = await self.bot.say('Thinking...')
 		await self.bot.send_typing(ctx.message.channel)
 		trainer = await self.get_trainer(discord=ctx.message.author.id)
-		suspected_time = maya.parce(date).datetime(to_timezone='UTC')
-		await self.bot.edit_message(message, "Just to confirm, you mean {}, right?".format(suspected_time))
+		try:
+			suspected_time = maya.parse(date)
+		except ParserError:
+			await self.bot.edit_message(message, "I can't figure out what you mean by '{}', can you please be a bit more... inteligible?".format(date))
+			return
+		await self.bot.edit_message(message, "Just to confirm, you mean {}, right?".format(suspected_time.slang_date()))
 		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
 		if answer is None:
 			await self.bot.edit_message(message, 'Timeout. Not setting start date')
 			return
-		elif ("yes","y","true","affirmative") not in answer.content.lower():
-			await self.bot.edit_message(message, "It seems you didn't agree that the date was the correct date. Not setting date.")
+		elif 'yes' not in answer.content.lower():
+			message = await self.bot.say("It seems you didn't agree that the date was the correct date. Not setting date.")
 			return
 		else:
-			self.client.update_trainer(trainer, start_date=suspected_time)
-			await self.bot.edit_message(message, "{}, your start date has been set to {}".format(ctx.message.author.mention, suspected_time))
+			self.client.update_trainer(trainer, start_date=suspected_time.datetime(to_timezone='UTC'))
+			await self.bot.edit_message(message, "{}, your start date has been set to {}".format(ctx.message.author.mention, suspected_time.slang_date()))
 	
 	@update.command(name="goal", pass_context=True)
 	async def goal(self, ctx, which: str, goal: int):
