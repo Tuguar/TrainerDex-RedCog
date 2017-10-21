@@ -30,6 +30,22 @@ Difference = namedtuple('Difference', [
 
 levelup = ["You reached your goal, well done. Now if only applied that much effort at buying {member} pizza, I might be happy!", "Well done on reaching {goal:,}", "much xp, very goal", "Great, you got to {goal:,} XP, now what?"]
 
+class DummyUpdate:
+	
+	def __init__(self, trainer):
+		self.raw = None
+		self.id = 0-trainer.id
+		self.time_updated = trainer.start_date
+		self.xp = 0
+	
+	@classmethod
+	def level(cls):
+		return 1
+	
+	@classmethod
+	def trainer(cls):
+		return trainer
+
 class TrainerDex:
 	
 	def __init__(self, bot):
@@ -64,13 +80,15 @@ class TrainerDex:
 	
 	async def getDiff(self, trainer, days: int):
 		updates = trainer.updates()
+		if trainer.start_date!=datetime.date(2016,7,13): 
+			update.append(DummyUpdate(trainer))
 		updates.sort(key=lambda x: x.time_updated)
 		latest = trainer.update
-		oldest = updates[0]
+		first = updates[1]
 		reference = [x for x in updates if x.time_updated <= (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=days)+datetime.timedelta(hours=6))]
 		reference.sort(key=lambda x: x.time_updated, reverse=True)
 		if reference==[]:
-			if latest==oldest:
+			if latest==first:
 				diff = Difference(
 					old_date = None,
 					old_xp = None,
@@ -80,8 +98,8 @@ class TrainerDex:
 					change_xp = None
 				)
 				return diff
-			elif oldest.time_updated > (latest.time_updated-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
-				reference=oldest
+			elif first.time_updated > (latest.time_updated-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
+				reference=first
 		else:
 			reference = reference[0]
 		diff = Difference(
