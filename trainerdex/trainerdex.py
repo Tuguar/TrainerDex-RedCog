@@ -345,11 +345,11 @@ class TrainerDex:
 					await self.bot.say('Could not be magic with {}: `{}`'.format(mbr.mention, e))
 				else:
 					trainer = users[i].trainer()
-					embed.add_field(name='{}. {} - {}'.format(i+1, trainer.username, trainer.team().name), value="{:,}".format(trainer.update.xp))
+					embed.add_field(name='{}. {} {} {}'.format(i+1, trainer.username, trainer.level, trainer.team().name), value="{:,}".format(trainer.update.xp))
 		else:
 			for i in range(min(25, len(users))):
 				trainer = users[i].trainer()
-				embed.add_field(name='{}. {} - {}'.format(i+1, trainer.username, trainer.team().name), value="{:,}".format(trainer.update.xp))
+				embed.add_field(name='{}. {} {} {}'.format(i+1, trainer.username, trainer.level, trainer.team().name), value="{:,}".format(trainer.update.xp))
 		await self.bot.edit_message(message, new_content=str(datetime.date.today()), embed=embed)
 	
 	#Mod-commands
