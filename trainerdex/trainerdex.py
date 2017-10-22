@@ -316,7 +316,7 @@ class TrainerDex:
 		await self.bot.send_typing(ctx.message.channel)
 		trainer = await self.get_trainer(discord=ctx.message.author.id)
 		try:
-			suspected_time = maya.parse(date)
+			suspected_time = maya.parse(date, day_first=True)
 		except ParserError:
 			await self.bot.edit_message(message, "I can't figure out what you mean by '{}', can you please be a bit more... inteligible?".format(date))
 			return
