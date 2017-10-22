@@ -37,7 +37,7 @@ class TrainerDex:
 		self.client = trainerdex.Client(token)
 		self.teams = self.client.get_teams()
 		
-	async def get_trainer(self, username=None, discord=None, account=None, prefered=True):
+	async def get_trainer(self, username=None, discord=None, account=None, prefered=True, respect_privacy=True):
 		"""Returns a Trainer object for a given discord, trainer username or account id
 		
 		Search is done in the order of username > discord > account, if you specify more than one, it will ONLY search the first one.
@@ -45,7 +45,7 @@ class TrainerDex:
 		
 		if username:
 			try:
-				return self.client.get_trainer_from_username(username)
+				return self.client.get_trainer_from_username(username, respect_privacy=respect_privacy)
 			except LookupError:
 				raise
 		elif discord and prefered==True:
@@ -136,35 +136,46 @@ class TrainerDex:
 	
 	async def profileCard(self, name: str, force=False):
 		try:
-			trainer = await self.get_trainer(username=name)
+			trainer = await self.get_trainer(username=name, respect_privacy=False)
 		except LookupError:
 			raise
 		account = trainer.owner()
 		discordUser = account.discord()
 		level=trainer.level
-		if trainer.statistics is False and force is False:
-			await self.bot.say("{} has chosen to opt out of statistics and the trainer profile system.".format(t_pogo))
-		else:
-			embed=discord.Embed(timestamp=trainer.update.time_updated, colour=int(trainer.team().colour.replace("#", ""), 16))
-			try:
-				embed.set_author(name=trainer.username, icon_url=discordUser.avatar_url)
-			except:
-				embed.set_author(name=trainer.username)
-			if account and (account.first_name or account.last_name):
-				embed.add_field(name='Name', value=account.first_name+' '+account.last_name)
-			embed.add_field(name='Team', value=trainer.team().name)
-			embed.add_field(name='Level', value=level.level)
+		
+		embed=discord.Embed(timestamp=trainer.update.time_updated, colour=int(trainer.team().colour.replace("#", ""), 16))
+		try:
+			embed.set_author(name=trainer.username, icon_url=discordUser.avatar_url)
+		except:
+			embed.set_author(name=trainer.username)
+		if account and (account.first_name or account.last_name) and (trainer.statistics is True or force is True) and trainer.cheater is False:
+			embed.add_field(name='Name', value=account.first_name+' '+account.last_name)
+		embed.add_field(name='Team', value=trainer.team().name)
+		embed.add_field(name='Level', value=level.level)
+		if trainer.statistics is True or force is True:
 			if level.level != 40:
 				embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
 			else:
 				embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
-			#embed.set_thumbnail(url=trainer.team().image)
 			if discordUser:
 				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
+		if trainer.cheater is True or trainer.statistics is False:
+			desc = '{0} '
+			desc_also = False
+			if trainer.statistics is False:
+				desc += "has chosen to opt out of statistics, and the trainer profile system"
+				if force is True:
+					desc += ", however, you can see this information anyway. This is most likely because you are {1}."
+				desc_also = True
 			if trainer.cheater is True:
-				embed.add_field(name='Comments', value='{} is a known spoofer'.format(trainer.username))
-			embed.set_footer(text="Total XP: {:,}".format(trainer.update.xp))
-			return embed
+				if desc_also is True:
+					desc += "Additionally, {0} "
+					desc_also = False
+				desc += "has been known to cheat."
+				desc_also = True
+			embed.description = desc.format(trainer.username)
+		embed.set_footer(text="Total XP: {:,}".format(trainer.update.xp))
+		return embed
 	
 	async def _addProfile(self, message, mention, username: str, xp: int, team, has_cheated=False, currently_cheats=False, name: str=None, prefered=True):
 		#Check existance
