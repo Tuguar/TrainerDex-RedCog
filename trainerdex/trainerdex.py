@@ -323,14 +323,14 @@ class TrainerDex:
 		await self.bot.edit_message(message, "Just to confirm, you mean {}, right?".format(suspected_time.slang_date()))
 		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
 		if answer is None:
-			await self.bot.edit_message(message, 'Timeout. Not setting start date')
+			message = await self.bot.say('Timeout. Not setting start date')
 			return
 		elif 'yes' not in answer.content.lower():
 			message = await self.bot.say("It seems you didn't agree that the date was the correct date. Not setting date.")
 			return
 		else:
 			self.client.update_trainer(trainer, start_date=suspected_time.datetime(to_timezone='UTC'))
-			await self.bot.edit_message(message, "{}, your start date has been set to {}".format(ctx.message.author.mention, suspected_time.slang_date()))
+			message = await self.bot.say("{}, your start date has been set to {}".format(ctx.message.author.mention, suspected_time.slang_date()))
 	
 	@update.command(name="goal", pass_context=True)
 	async def goal(self, ctx, which: str, goal: int):
