@@ -3,6 +3,7 @@ import os
 import asyncio
 import datetime
 import humanize
+import maya
 import pytz
 import discord
 import random
@@ -13,6 +14,7 @@ from collections import namedtuple
 from discord.ext import commands
 from .utils import checks
 from .utils.dataIO import dataIO
+from pendulum.parsing.exceptions import ParserError
 
 
 settings_file = 'data/trainerdex/settings.json'
@@ -29,6 +31,22 @@ Difference = namedtuple('Difference', [
 ])
 
 levelup = ["You reached your goal, well done. Now if only applied that much effort at buying {member} pizza, I might be happy!", "Well done on reaching {goal:,}", "much xp, very goal", "Great, you got to {goal:,} XP, now what?"]
+
+class DummyUpdate:
+	
+	def __init__(self, trainer):
+		self.raw = None
+		self.id = 0-trainer.id
+		self.time_updated = trainer.start_date
+		self.xp = 0
+	
+	@classmethod
+	def level(cls):
+		return 1
+	
+	@classmethod
+	def trainer(cls):
+		return trainer
 
 class TrainerDex:
 	
@@ -64,13 +82,15 @@ class TrainerDex:
 	
 	async def getDiff(self, trainer, days: int):
 		updates = trainer.updates()
+		if trainer.start_date!=datetime.date(2016,7,13): 
+			update.append(DummyUpdate(trainer))
 		updates.sort(key=lambda x: x.time_updated)
 		latest = trainer.update
-		oldest = updates[0]
+		first = updates[1]
 		reference = [x for x in updates if x.time_updated <= (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=days)+datetime.timedelta(hours=6))]
 		reference.sort(key=lambda x: x.time_updated, reverse=True)
 		if reference==[]:
-			if latest==oldest:
+			if latest==first:
 				diff = Difference(
 					old_date = None,
 					old_xp = None,
@@ -80,8 +100,8 @@ class TrainerDex:
 					change_xp = None
 				)
 				return diff
-			elif oldest.time_updated > (latest.time_updated-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
-				reference=oldest
+			elif first.time_updated > (latest.time_updated-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
+				reference=first
 		else:
 			reference = reference[0]
 		diff = Difference(
@@ -301,6 +321,30 @@ class TrainerDex:
 				await self.bot.edit_message(message, new_content='`Error: '+str(e)+'`')
 		else:
 			await self.bot.edit_message(message, new_content="Not found!")
+	
+	@update.command(name="start", pass_context=True)
+	async def start_date(self, ctx, *, date: str):
+		"""Set the day you started Pokemon Go"""
+		
+		message = await self.bot.say('Thinking...')
+		await self.bot.send_typing(ctx.message.channel)
+		trainer = await self.get_trainer(discord=ctx.message.author.id)
+		try:
+			suspected_time = maya.parse(date, day_first=True)
+		except ParserError:
+			await self.bot.edit_message(message, "I can't figure out what you mean by '{}', can you please be a bit more... inteligible?".format(date))
+			return
+		await self.bot.edit_message(message, "Just to confirm, you mean {}, right?".format(suspected_time.slang_date()))
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer is None:
+			message = await self.bot.say('Timeout. Not setting start date')
+			return
+		elif 'yes' not in answer.content.lower():
+			message = await self.bot.say("It seems you didn't agree that the date was the correct date. Not setting date.")
+			return
+		else:
+			self.client.update_trainer(trainer, start_date=suspected_time.datetime(to_timezone='UTC'))
+			message = await self.bot.say("{}, your start date has been set to {}".format(ctx.message.author.mention, suspected_time.slang_date()))
 	
 	@update.command(name="goal", pass_context=True)
 	async def goal(self, ctx, which: str, goal: int):
