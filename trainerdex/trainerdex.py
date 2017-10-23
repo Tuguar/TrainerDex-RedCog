@@ -145,11 +145,13 @@ class TrainerDex:
 		if totalGoal:
 			totalDiff = await self.getDiff(trainer, 7)
 			embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
-			if totalDiff.change_time.days>0:
+			if totalDiff.change_time.seconds>=1:
 				eta = lambda x, y, z: round(x/(y/z))
-				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.days)
-				eta = totalDiff.new_date+datetime.timedelta(days=eta)
+				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.total_seconds())
+				eta = totalDiff.new_date+datetime.timedelta(seconds=eta)
 				embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
+			if totalDiff.change_time.seconds<583200:
+				embed.add_field(name='Caution', value='ETA may be inaccurate. Using over {} days.'.format(totalDiff.change_time.total_seconds()/86400))
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
 		return embed
