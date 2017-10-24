@@ -296,6 +296,22 @@ class TrainerDex:
 			trainer = self.client.get_trainer(trainer.id) #Refreshes the trainer
 			embed = await self.updateCard(trainer)
 			await self.bot.edit_message(message, new_content='Success 👍', embed=embed)
+			
+	@update.command(name="adv", pass_context=True)
+	async def advanced_update(self, ctx): 
+		"""Update your stats, if ran within x minutes of the bog standard xp command, it will modify that"""
+		
+		message = await self.bot.say('Looking for recent update...')
+		trainer = await self.get_trainer(discord=ctx.message.author.id)
+		if trainer is None:
+			await self.bot.edit_message(message, "Cannot find {} in the database.".format(ctx.message.author.mention))
+		
+		## ##
+		
+		return
+		#trainer = self.client.get_trainer(trainer.id) #Refreshes the trainer
+		#embed = await self.updateCard(trainer)
+		#await self.bot.edit_message(message, new_content='Success 👍', embed=embed)
 	
 	@update.command(name="name", pass_context=True)
 	async def name(self, ctx, first_name: str, last_name: str=None): 
