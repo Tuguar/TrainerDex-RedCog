@@ -20,6 +20,7 @@ class Useful:
 			'{} just put a casserole in the oven.', 
 			'{} accidentally got on a plane. ✈️', 
 		]
+		await self.bot.delete_message(ctx.message)
 		await self.bot.send_typing(ctx.message.channel)
 		await self.bot.say(random.choice(excuses).format(ctx.message.author.display_name))
 	
