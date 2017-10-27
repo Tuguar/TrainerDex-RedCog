@@ -3,6 +3,7 @@ import os
 import asyncio
 import datetime
 import humanize
+import maya
 import pytz
 import discord
 import random
@@ -13,6 +14,7 @@ from collections import namedtuple
 from discord.ext import commands
 from .utils import checks
 from .utils.dataIO import dataIO
+from pendulum.parsing.exceptions import ParserError
 
 
 settings_file = 'data/trainerdex/settings.json'
@@ -29,6 +31,22 @@ Difference = namedtuple('Difference', [
 ])
 
 levelup = ["You reached your goal, well done. Now if only applied that much effort at buying {member} pizza, I might be happy!", "Well done on reaching {goal:,}", "much xp, very goal", "Great, you got to {goal:,} XP, now what?"]
+
+class DummyUpdate:
+	
+	def __init__(self, trainer):
+		self.raw = None
+		self.id = 0-trainer.id
+		self.time_updated = trainer.start_date
+		self.xp = 0
+	
+	@classmethod
+	def level(cls):
+		return 1
+	
+	@classmethod
+	def trainer(cls):
+		return trainer
 
 class TrainerDex:
 	
@@ -64,13 +82,15 @@ class TrainerDex:
 	
 	async def getDiff(self, trainer, days: int):
 		updates = trainer.updates()
+		if trainer.start_date!=datetime.date(2016,7,13): 
+			updates.append(DummyUpdate(trainer))
 		updates.sort(key=lambda x: x.time_updated)
 		latest = trainer.update
-		oldest = updates[0]
+		first = updates[1]
 		reference = [x for x in updates if x.time_updated <= (datetime.datetime.now(pytz.utc)-datetime.timedelta(days=days)+datetime.timedelta(hours=6))]
 		reference.sort(key=lambda x: x.time_updated, reverse=True)
 		if reference==[]:
-			if latest==oldest:
+			if latest==first:
 				diff = Difference(
 					old_date = None,
 					old_xp = None,
@@ -80,8 +100,8 @@ class TrainerDex:
 					change_xp = None
 				)
 				return diff
-			elif oldest.time_updated > (latest.time_updated-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
-				reference=oldest
+			elif first.time_updated > (latest.time_updated-datetime.timedelta(days=days)+datetime.timedelta(hours=3)):
+				reference=first
 		else:
 			reference = reference[0]
 		diff = Difference(
@@ -107,7 +127,7 @@ class TrainerDex:
 		if level.level != 40:
 			embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
 		else:
-			embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
+			embed.add_field(name='Total XP', value='{}'.format(humanize.intword(level.total_xp)))
 		if dailyDiff.change_xp and dailyDiff.change_time:
 			gain = '{:,} since {}. '.format(dailyDiff.change_xp, humanize.naturalday(dailyDiff.old_date))
 			if dailyDiff.change_time.days>1:
@@ -125,11 +145,13 @@ class TrainerDex:
 		if totalGoal:
 			totalDiff = await self.getDiff(trainer, 7)
 			embed.add_field(name='Goal remaining', value='{:,} out of {}'.format(totalGoal-totalDiff.new_xp, humanize.intword(totalGoal)))
-			if totalDiff.change_time.days>0:
+			if totalDiff.change_time.seconds>=1:
 				eta = lambda x, y, z: round(x/(y/z))
-				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.days)
-				eta = totalDiff.new_date+datetime.timedelta(days=eta)
+				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.total_seconds())
+				eta = totalDiff.new_date+datetime.timedelta(seconds=eta)
 				embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
+			if totalDiff.change_time.seconds<583200:
+				embed.add_field(name='Caution', value='ETA may be inaccurate. Using over {} days.'.format(totalDiff.change_time.total_seconds()/86400))
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
 		return embed
@@ -156,7 +178,7 @@ class TrainerDex:
 			if level.level != 40:
 				embed.add_field(name='XP', value='{:,} / {:,}'.format(trainer.update.xp-level.total_xp,level.xp_required))
 			else:
-				embed.add_field(name='XP', value='roughly {}'.format(humanize.intword(trainer.update.xp-level.total_xp)))
+				embed.add_field(name='Total XP', value='{}'.format(humanize.intword(level.total_xp)))
 			if discordUser:
 				embed.add_field(name='Discord', value='<@{}>'.format(discordUser.id))
 		if trainer.cheater is True or trainer.statistics is False:
@@ -302,6 +324,30 @@ class TrainerDex:
 		else:
 			await self.bot.edit_message(message, new_content="Not found!")
 	
+	@update.command(name="start", pass_context=True)
+	async def start_date(self, ctx, *, date: str):
+		"""Set the day you started Pokemon Go"""
+		
+		message = await self.bot.say('Thinking...')
+		await self.bot.send_typing(ctx.message.channel)
+		trainer = await self.get_trainer(discord=ctx.message.author.id)
+		try:
+			suspected_time = maya.parse(date, day_first=True)
+		except ParserError:
+			await self.bot.edit_message(message, "I can't figure out what you mean by '{}', can you please be a bit more... inteligible?".format(date))
+			return
+		await self.bot.edit_message(message, "Just to confirm, you mean {}, right?".format(suspected_time.slang_date()))
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer is None:
+			message = await self.bot.say('Timeout. Not setting start date')
+			return
+		elif 'yes' not in answer.content.lower():
+			message = await self.bot.say("It seems you didn't agree that the date was the correct date. Not setting date.")
+			return
+		else:
+			self.client.update_trainer(trainer, start_date=suspected_time.datetime(to_timezone='UTC'))
+			message = await self.bot.say("{}, your start date has been set to {}".format(ctx.message.author.mention, suspected_time.slang_date()))
+	
 	@update.command(name="goal", pass_context=True)
 	async def goal(self, ctx, which: str, goal: int):
 		"""Update your goals
@@ -345,11 +391,11 @@ class TrainerDex:
 					await self.bot.say('Could not be magic with {}: `{}`'.format(mbr.mention, e))
 				else:
 					trainer = users[i].trainer()
-					embed.add_field(name='{}. {} - {}'.format(i+1, trainer.username, trainer.team().name), value="{:,}".format(trainer.update.xp))
+					embed.add_field(name='{}. {} {} {}'.format(i+1, trainer.username, trainer.level, trainer.team().name), value="{:,}".format(trainer.update.xp))
 		else:
 			for i in range(min(25, len(users))):
 				trainer = users[i].trainer()
-				embed.add_field(name='{}. {} - {}'.format(i+1, trainer.username, trainer.team().name), value="{:,}".format(trainer.update.xp))
+				embed.add_field(name='{}. {} {} {}'.format(i+1, trainer.username, trainer.level, trainer.team().name), value="{:,}".format(trainer.update.xp))
 		await self.bot.edit_message(message, new_content=str(datetime.date.today()), embed=embed)
 	
 	#Mod-commands
