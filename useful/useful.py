@@ -15,9 +15,7 @@ class Useful:
 		excuses = [
 			'{} is finding socks.', 
 			'{} is only '+str(random.randint(61,300))+' minutes away.', 
-			'{}’s cat got stuck in the toilet.', 
-			'Pizzzaaaaaaa 🍕🍍', 
-			'{} just put a casserole in the oven.', 
+			'{} has pizzzaaaaaaa 🍕🍍', 
 			'{} accidentally got on a plane. ✈️', 
 		]
 		await self.bot.delete_message(ctx.message)
