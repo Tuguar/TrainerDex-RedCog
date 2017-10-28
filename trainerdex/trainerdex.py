@@ -32,7 +32,7 @@ Difference = namedtuple('Difference', [
 
 levelup = ["You reached your goal, well done. Now if only applied that much effort at buying {member} pizza, I might be happy!", "Well done on reaching {goal:,}", "much xp, very goal", "Great, you got to {goal:,} XP, now what?"]
 
-class DummyUpdate:
+class StartDateUpdate:
 	
 	def __init__(self, trainer):
 		self.raw = None
@@ -83,7 +83,7 @@ class TrainerDex:
 	async def getDiff(self, trainer, days: int):
 		updates = trainer.updates()
 		if trainer.start_date!=datetime.date(2016,7,13): 
-			updates.append(DummyUpdate(trainer))
+			updates.append(StartDateUpdate(trainer))
 		updates.sort(key=lambda x: x.time_updated)
 		latest = trainer.update
 		first = updates[1]
@@ -151,7 +151,7 @@ class TrainerDex:
 				eta = totalDiff.new_date+datetime.timedelta(seconds=eta)
 				embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
 			if totalDiff.change_time.seconds<583200:
-				embed.add_field(name='Caution', value='ETA may be inaccurate. Using over {} days.'.format(totalDiff.change_time.total_seconds()/86400))
+				embed.description = "ETA may be inaccurate. Using {} of data.".format(humanize.naturaldelta(totalDiff.change_time))
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
 		return embed
