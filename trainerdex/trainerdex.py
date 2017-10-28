@@ -297,7 +297,7 @@ class TrainerDex:
 			embed = await self.updateCard(trainer)
 			await self.bot.edit_message(message, new_content='Success 👍', embed=embed)
 			
-	@update.command(name="adv", pass_context=True)
+	@update.command(name="badges", pass_context=True)
 	async def advanced_update(self, ctx): 
 		"""Update your stats, if ran within x minutes of the bog standard xp command, it will modify that"""
 		
@@ -305,6 +305,21 @@ class TrainerDex:
 		trainer = await self.get_trainer(discord=ctx.message.author.id)
 		if trainer is None:
 			await self.bot.edit_message(message, "Cannot find {} in the database.".format(ctx.message.author.mention))
+			return
+		
+		if trainer.update.time_updated >= datetime.datetime.now()-datetime.timedelta(seconds=3600):
+			record = trainer.update
+		else:
+			record = None
+		
+		#All the questions will be run here
+		#I need to update libtrainerdex to support badges and to support correcting an update.
+		
+		stuff=None
+		if record:
+			self.client.correct_update(record, stuff)
+		else:
+			self.client.create_update(trainer, stuff)
 		
 		## ##
 		
