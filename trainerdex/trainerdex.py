@@ -150,7 +150,7 @@ class TrainerDex:
 				eta = eta(totalGoal-totalDiff.new_xp, totalDiff.change_xp, totalDiff.change_time.total_seconds())
 				eta = totalDiff.new_date+datetime.timedelta(seconds=eta)
 				embed.add_field(name='Goal ETA', value=humanize.naturaltime(eta.replace(tzinfo=None)))
-			if totalDiff.change_time.seconds<583200:
+			if totalDiff.change_time.total_seconds()<583200:
 				embed.description = "ETA may be inaccurate. Using {} of data.".format(humanize.naturaldelta(totalDiff.change_time))
 		embed.set_footer(text="Total XP: {:,}".format(dailyDiff.new_xp))
 		
@@ -391,11 +391,11 @@ class TrainerDex:
 					await self.bot.say('Could not be magic with {}: `{}`'.format(mbr.mention, e))
 				else:
 					trainer = users[i].trainer()
-					embed.add_field(name='{}. {} {} {}'.format(i+1, trainer.username, trainer.level, trainer.team().name), value="{:,}".format(trainer.update.xp))
+					embed.add_field(name='{}. {} {} {}'.format(i+1, trainer.username, trainer.level.level, trainer.team().name), value="{:,}".format(trainer.update.xp))
 		else:
 			for i in range(min(25, len(users))):
 				trainer = users[i].trainer()
-				embed.add_field(name='{}. {} {} {}'.format(i+1, trainer.username, trainer.level, trainer.team().name), value="{:,}".format(trainer.update.xp))
+				embed.add_field(name='{}. {} {} {}'.format(i+1, trainer.username, trainer.level.level, trainer.team().name), value="{:,}".format(trainer.update.xp))
 		await self.bot.edit_message(message, new_content=str(datetime.date.today()), embed=embed)
 	
 	#Mod-commands
