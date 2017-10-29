@@ -454,6 +454,28 @@ class TrainerDex:
 
 		else:
 			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many gyms have you defended?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				gym_defended = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many big Magikarp do you have?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				big_magikarp = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
 	
 		return
 		#trainer = self.client.get_trainer(trainer.id) #Refreshes the trainer
