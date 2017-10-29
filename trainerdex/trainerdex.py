@@ -476,6 +476,72 @@ class TrainerDex:
 
 		else:
 			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many tiny Rattata's do you have?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				tiny_rattata = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many pikachu have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pikachu_caught = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("Out of 26, how many unown's have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				unown_alphabet = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many raids have you completed?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				raids_completed = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many legendary raids have you completed?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				leg_raids_completed = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many generation 3 pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				gen_3_dex = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
 	
 		return
 		#trainer = self.client.get_trainer(trainer.id) #Refreshes the trainer
