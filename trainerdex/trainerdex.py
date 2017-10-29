@@ -320,8 +320,57 @@ class TrainerDex:
 			self.client.correct_update(record, stuff)
 		else:
 			self.client.create_update(trainer, stuff)
-		
 		## ##
+		
+		question = await self.bot.say("What's your XP?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				xp = int(answer)
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("In your pokedex, how many pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				dex_caught = int(answer)
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+					question = await self.bot.say("In your pokedex, how many pokemon have you seen?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				dex_seen = int(answer)
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+			question = await self.bot.say("How much distance, have you walked?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				walk_dist = int(answer)
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+			question = await self.bot.say("How many Gen 1 Pokémon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				gen_1_dex = int(answer)
+		else:
+			await self.bot.edit_message(question, timeout_text)
 		
 		return
 		#trainer = self.client.get_trainer(trainer.id) #Refreshes the trainer
