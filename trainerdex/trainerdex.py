@@ -371,7 +371,79 @@ class TrainerDex:
 				gen_1_dex = int(answer)
 		else:
 			await self.bot.edit_message(question, timeout_text)
-		
+			
+			question = await self.bot.say("How many pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_caught = int(answer)
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+						question = await self.bot.say("How many pokemon have you evolved?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_evolved = int(answer)
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+			question = await self.bot.say("How many pokestops have you spun?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkstops_spun = int(answer)
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+			question = await self.bot.say("How many pokestops have you spun?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkstops_spun = int(answer)
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+			question = await self.bot.say("How many gym battles have you won?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				battles_won = int(answer)
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+			question = await self.bot.say("How many Gen 2 pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				gen_2_dex = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+			question = await self.bot.say("How many berries have you fed?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				berry_fed = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text
+	
 		return
 		#trainer = self.client.get_trainer(trainer.id) #Refreshes the trainer
 		#embed = await self.updateCard(trainer)
