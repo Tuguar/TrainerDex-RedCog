@@ -542,6 +542,215 @@ class TrainerDex:
 
 		else:
 			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many normal type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_normal = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many flying type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_flying = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many poison type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_poison = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many ground type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_ground = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many rock type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_rock = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many bug type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_bug = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many steel type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_steel = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many fire type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_fire = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many water type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_water = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many grass type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_grass = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many electric type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_electric = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many psychic type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_psychic = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many dark type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_dark = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many fairy type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_fairy = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many fighting type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_fighting = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many ghost type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_ghost = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many ice type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_ice = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many dragon type pokemon have you caught?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				pkmn_dragon = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
+			
+		question = await self.bot.say("How many gym badges have you earned?")
+		answer = await self.bot.wait_for_message(timeout=30, author=ctx.message.author)
+		if answer:
+			if 'skip' is in answer.content.lower():
+				pass
+			else:
+				gym_badges = int(answer)
+
+		else:
+			await self.bot.edit_message(question, timeout_text)
 	
 		return
 		#trainer = self.client.get_trainer(trainer.id) #Refreshes the trainer
